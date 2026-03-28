@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MotVendas Viral — Pro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green: #00ff88;
+      --green-dim: #00cc6a;
+      --bg: #030303;
+      --surface: #0c0c0c;
+      --surface2: #111;
+      --border: #1a1a1a;
+      --text: #f0f0f0;
+      --muted: #666;
+      --accent: #ff3f6c;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* Custom cursor */
+    .cursor {
+      width: 12px; height: 12px;
+      background: var(--green);
+      border-radius: 50%;
+      position: fixed; top: 0; left: 0;
+      pointer-events: none; z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s;
+      mix-blend-mode: difference;
+    }
+
+    .cursor-ring {
+      width: 36px; height: 36px;
+      border: 1px solid var(--green);
+      border-radius: 50%;
+      position: fixed; top: 0; left: 0;
+      pointer-events: none; z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: all 0.15s ease;
+      opacity: 0.5;
+    }
+
+    /* Noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 1000; opacity: 0.4;
+    }
+
+    /* ─── HEADER ─── */
+    header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 18px 48px;
+      background: rgba(3,3,3,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 26px;
+      letter-spacing: 2px;
+      color: var(--green);
+      text-shadow: 0 0 30px rgba(0,255,136,0.4);
+    }
+
+    nav { display: flex; gap: 32px; align-items: center; }
+
+    nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    nav a:hover { color: var(--green); }
+
+    .nav-btn {
+      padding: 10px 22px;
+      background: var(--green);
+      color: #000 !important;
+      border-radius: 6px;
+      font-weight: 700 !important;
+      transition: box-shadow 0.3s, transform 0.2s !important;
+    }
+    .nav-btn:hover {
+      box-shadow: 0 0 24px rgba(0,255,136,0.5);
+      transform: translateY(-1px) !important;
+    }
+
+    /* ─── HERO ─── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      text-align: center;
+      padding: 120px 40px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(0,255,136,0.06) 0%, transparent 70%),
+                  radial-gradient(ellipse 50% 40% at 80% 80%, rgba(255,63,108,0.04) 0%, transparent 60%);
+    }
+
+    .hero-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black, transparent);
+    }
+
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(0,255,136,0.08);
+      border: 1px solid rgba(0,255,136,0.2);
+      border-radius: 100px;
+      padding: 6px 16px;
+      font-size: 12px; font-weight: 600;
+      color: var(--green); letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      animation: fadeUp 0.8s ease both;
+    }
+
+    .tag-dot {
+      width: 6px; height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.7); }
+    }
+
+    .hero h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(52px, 9vw, 110px);
+      line-height: 0.95;
+      letter-spacing: 1px;
+      max-width: 900px;
+      animation: fadeUp 0.9s 0.1s ease both;
+    }
+
+    .hero h2 span { color: var(--green); }
+
+    .hero p {
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: 17px;
+      max-width: 500px;
+      line-height: 1.7;
+      animation: fadeUp 1s 0.2s ease both;
+    }
+
+    .hero-cta {
+      margin-top: 40px;
+      display: flex; gap: 14px;
+      animation: fadeUp 1s 0.3s ease both;
+    }
+
+    .btn-primary {
+      padding: 16px 36px;
+      background: var(--green);
+      color: #000;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-radius: 8px;
+      transition: box-shadow 0.3s, transform 0.2s;
+    }
+    .btn-primary:hover {
+      box-shadow: 0 0 40px rgba(0,255,136,0.5);
+      transform: translateY(-2px);
+    }
+
+    .btn-ghost {
+      padding: 16px 36px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-radius: 8px;
+      transition: border-color 0.3s, color 0.3s;
+    }
+    .btn-ghost:hover { border-color: var(--green); color: var(--green); }
+
+    .hero-stats {
+      margin-top: 70px;
+      display: flex; gap: 48px;
+      animation: fadeUp 1s 0.4s ease both;
+    }
+
+    .stat { text-align: center; }
+    .stat-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 42px;
+      color: var(--green);
+      line-height: 1;
+    }
+    .stat-label { font-size: 12px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── SECTIONS ─── */
+    section.content { padding: 100px 48px; max-width: 1200px; margin: auto; }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 14px;
+    }
+
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(36px, 5vw, 60px);
+      line-height: 1;
+      margin-bottom: 48px;
+    }
+
+    /* ─── CARDS ─── */
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+
+    .card {
+      background: var(--surface);
+      padding: 36px 32px;
+      transition: background 0.3s;
+      position: relative;
+    }
+    .card:hover { background: var(--surface2); }
+
+    .card-icon {
+      font-size: 28px;
+      margin-bottom: 18px;
+      display: block;
+    }
+
+    .card h3 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .card p { color: var(--muted); font-size: 14px; line-height: 1.7; }
+
+    .card-tag {
+      display: inline-block;
+      margin-top: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--green);
+    }
+
+    /* ─── PRODUCT CARDS ─── */
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+
+    .product-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .product-card:hover { border-color: var(--green); transform: translateY(-4px); }
+
+    .product-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--green), transparent);
+    }
+
+    .product-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(0,255,136,0.1);
+      border: 1px solid rgba(0,255,136,0.3);
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--green);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .product-card h3 { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+    .product-card p { color: var(--muted); font-size: 14px; line-height: 1.7; margin-bottom: 24px; }
+
+    .product-price {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 48px;
+      color: var(--green);
+      line-height: 1;
+    }
+    .product-price span { font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--muted); }
+
+    /* ─── CTA BANNER ─── */
+    .cta-banner {
+      margin: 0 48px 100px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 80px 60px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-banner::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 80% at 50% 50%, rgba(0,255,136,0.06), transparent);
+    }
+
+    .cta-banner h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(36px, 5vw, 64px);
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .cta-banner p { color: var(--muted); margin-bottom: 36px; font-size: 16px; position: relative; }
+
+    /* ─── DASHBOARD ─── */
+    #dashboard {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 80px 48px;
+    }
+
+    .dash-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+
+    .dash-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 36px;
+      color: var(--green);
+    }
+
+    .live-badge {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 16px;
+      background: rgba(0,255,136,0.08);
+      border: 1px solid rgba(0,255,136,0.2);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--green);
+    }
+
+    .live-dot {
+      width: 7px; height: 7px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 1.2s infinite;
+    }
+
+    .dash-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .metric-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s;
+    }
+    .metric-card:hover { border-color: rgba(0,255,136,0.3); }
+
+    .metric-label { font-size: 12px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+    .metric-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 40px;
+      color: var(--text);
+      line-height: 1;
+      transition: color 0.5s;
+    }
+    .metric-value.green { color: var(--green); }
+
+    .metric-change {
+      margin-top: 8px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .metric-change.up { color: var(--green); }
+    .metric-change.down { color: var(--accent); }
+
+    /* mini sparkline */
+    .sparkline { margin-top: 14px; height: 36px; display: flex; align-items: flex-end; gap: 3px; }
+    .spark-bar {
+      flex: 1;
+      background: rgba(0,255,136,0.2);
+      border-radius: 2px 2px 0 0;
+      transition: background 0.3s;
+    }
+    .spark-bar.active { background: var(--green); }
+    .metric-card:hover .spark-bar { background: rgba(0,255,136,0.35); }
+    .metric-card:hover .spark-bar.active { background: var(--green); }
+
+    /* chart area */
+    .chart-area {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+    }
+
+    .chart-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px;
+    }
+
+    .chart-box-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .chart-box-sub { font-size: 12px; color: var(--muted); margin-bottom: 24px; }
+
+    /* SVG Chart */
+    .line-chart-svg { width: 100%; height: 180px; }
+
+    /* Top sources list */
+    .source-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .source-item:last-child { border: none; }
+
+    .source-icon { font-size: 18px; width: 36px; text-align: center; }
+    .source-name { font-size: 13px; font-weight: 500; flex: 1; }
+    .source-bar-wrap { width: 80px; height: 4px; background: var(--border); border-radius: 2px; }
+    .source-bar { height: 4px; background: var(--green); border-radius: 2px; }
+    .source-pct { font-size: 12px; font-weight: 700; color: var(--green); width: 36px; text-align: right; }
+
+    /* recent activity */
+    .activity-feed {
+      margin-top: 16px;
+    }
+    .activity-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      animation: slideIn 0.4s ease both;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .activity-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .activity-dot.visit { background: var(--green); }
+    .activity-dot.click { background: #3df; }
+    .activity-dot.sale { background: var(--accent); }
+
+    .activity-text { font-size: 13px; flex: 1; }
+    .activity-text span { color: var(--muted); }
+    .activity-time { font-size: 11px; color: var(--muted); }
+
+    /* ─── CONTACT ─── */
+    .contact-section {
+      padding: 80px 48px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: start;
+    }
+
+    .contact-info h3 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .contact-info p { color: var(--muted); font-size: 14px; line-height: 1.7; margin-bottom: 32px; }
+
+    .contact-link {
+      display: flex; align-items: center; gap: 14px;
+      padding: 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      text-decoration: none;
+      color: var(--text);
+      margin-bottom: 12px;
+      transition: border-color 0.3s, transform 0.2s;
+    }
+    .contact-link:hover { border-color: var(--green); transform: translateX(4px); }
+    .contact-link-icon { font-size: 22px; }
+    .contact-link-text { font-size: 14px; font-weight: 500; }
+    .contact-link-sub { font-size: 12px; color: var(--muted); }
+
+    /* ─── FOOTER ─── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 30px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    footer .logo-sm {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 18px;
+      color: var(--green);
+      letter-spacing: 2px;
+    }
+
+    @media (max-width: 768px) {
+      header { padding: 14px 20px; }
+      nav a:not(.nav-btn) { display: none; }
+      section.content, #dashboard, .contact-section { padding: 60px 20px; }
+      .cta-banner { margin: 0 20px 60px; padding: 50px 24px; }
+      .chart-area { grid-template-columns: 1fr; }
+      .contact-grid { grid-template-columns: 1fr; }
+      footer { flex-direction: column; gap: 10px; text-align: center; }
+      .hero-stats { gap: 24px; flex-wrap: wrap; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">MotVendas Viral</div>
+  <nav>
+    <a href="#conteudo">Conteúdo</a>
+    <a href="#produtos">Produtos</a>
+    <a href="#dashboard">Dashboard</a>
+    <a href="#contato">Contato</a>
+    <a href="#produtos" class="nav-btn">Começar</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-tag"><span class="tag-dot"></span> Marketing Digital • Moçambique</div>
+  <h2>Transforma <span>atenção</span><br>em dinheiro real</h2>
+  <p>Aprende as estratégias de marketing digital e mentalidade que estão a mudar vidas pelo celular.</p>
+  <div class="hero-cta">
+    <a href="#produtos" class="btn-primary">Começar Agora</a>
+    <a href="#conteudo" class="btn-ghost">Ver Conteúdo</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat">
+      <div class="stat-num" id="stat1">0</div>
+      <div class="stat-label">Alunos Activos</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="stat2">0</div>
+      <div class="stat-label">Reels Criados</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="stat3">0%</div>
+      <div class="stat-label">Taxa de Sucesso</div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTENT SECTION -->
+<section class="content" id="conteudo">
+  <div class="section-label">O que vais aprender</div>
+  <div class="section-title">Conteúdo Estratégico</div>
+  <div class="grid-3">
+    <div class="card">
+      <span class="card-icon">💸</span>
+      <h3>Ganhar Dinheiro Online</h3>
+      <p>Descobre como transformar seguidores em clientes e criar fontes de rendimento digitais consistentes.</p>
+      <span class="card-tag">→ Monetização</span>
+    </div>
+    <div class="card">
+      <span class="card-icon">📱</span>
+      <h3>Viralizar no Instagram</h3>
+      <p>Estratégias de Reels que prendem atenção, crescem contas do zero e geram alcance orgânico.</p>
+      <span class="card-tag">→ Crescimento</span>
+    </div>
+    <div class="card">
+      <span class="card-icon">🧠</span>
+      <h3>Mentalidade Forte</h3>
+      <p>Disciplina, foco e consistência — os três pilares que separam quem fatura de quem fica parado.</p>
+      <span class="card-tag">→ Mentalidade</span>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section class="content" id="produtos" style="padding-top:0">
+  <div class="section-label">Produtos digitais</div>
+  <div class="section-title">Escolhe o teu plano</div>
+  <div class="grid-2">
+    <div class="product-card">
+      <div class="product-badge">⭐ Mais Vendido</div>
+      <h3>Pack Conteúdo Viral</h3>
+      <p>Modelos prontos de Reels, captions e estratégias para crescer rápido no Instagram e TikTok. Inclui +50 templates.</p>
+      <!-- DUAL PRICE -->
+      <div style="display:flex;align-items:flex-end;gap:16px;margin:20px 0 6px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">🇲🇿 Moçambique</div>
+          <div class="product-price">397 <span>MZN</span></div>
+        </div>
+        <div style="color:var(--border);font-size:28px;margin-bottom:8px">|</div>
+        <div>
+          <div style="font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">🌍 Internacional</div>
+          <div class="product-price" style="color:#fff">$6<span style="font-family:'DM Sans',sans-serif;font-size:14px;color:var(--green)">.00 USD</span></div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:24px">Pagamento via M-Pesa, PayPal ou transferência</div>
+      <a href="https://wa.me/258878326548?text=Olá!%20Quero%20comprar%20o%20Pack%20Conteúdo%20Viral" target="_blank" class="btn-primary" style="display:inline-block">Comprar Agora →</a>
+    </div>
+    <div class="product-card">
+      <div class="product-badge">🔥 Exclusivo</div>
+      <h3>Ebook Mente Milionária</h3>
+      <p>Aprende a pensar como quem fatura online. Estratégias de psicologia, disciplina e vendas digitais. +120 páginas.</p>
+      <!-- DUAL PRICE -->
+      <div style="display:flex;align-items:flex-end;gap:16px;margin:20px 0 6px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">🇲🇿 Moçambique</div>
+          <div class="product-price">297 <span>MZN</span></div>
+        </div>
+        <div style="color:var(--border);font-size:28px;margin-bottom:8px">|</div>
+        <div>
+          <div style="font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">🌍 Internacional</div>
+          <div class="product-price" style="color:#fff">$4<span style="font-family:'DM Sans',sans-serif;font-size:14px;color:var(--green)">.60 USD</span></div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:24px">Pagamento via M-Pesa, PayPal ou transferência</div>
+      <a href="https://wa.me/258878326548?text=Olá!%20Quero%20comprar%20o%20Ebook%20Mente%20Milionária" target="_blank" class="btn-primary" style="display:inline-block">Comprar Agora →</a>
+    </div>
+  </div>
+  <!-- COMBO OFFER -->
+  <div style="margin-top:20px;background:linear-gradient(135deg,rgba(0,255,136,0.08),rgba(0,255,136,0.02));border:1px solid rgba(0,255,136,0.25);border-radius:16px;padding:32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px">
+    <div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:8px">🎁 Oferta Especial — Pack Completo</div>
+      <div style="font-size:20px;font-weight:700;margin-bottom:6px">Pack Viral + Ebook Mente Milionária</div>
+      <div style="font-size:13px;color:var(--muted)">Os dois produtos juntos com desconto exclusivo</div>
+    </div>
+    <div style="text-align:center">
+      <div style="font-size:13px;color:var(--muted);text-decoration:line-through;margin-bottom:4px">694 MZN / $10.60 USD</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:52px;color:var(--green);line-height:1">549 <span style="font-family:'DM Sans',sans-serif;font-size:16px">MZN</span></div>
+      <div style="font-size:14px;color:#aaa;margin-bottom:16px">≈ <strong style="color:var(--green)">$8.50 USD</strong></div>
+      <a href="https://wa.me/258878326548?text=Olá!%20Quero%20o%20Pack%20Completo%20(Viral%20+%20Ebook)" target="_blank" class="btn-primary" style="display:inline-block;white-space:nowrap">Quero o Pack Completo →</a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-banner">
+  <h2>Continuas parado<br>ou começas hoje?</h2>
+  <p>Cada dia que passa é dinheiro que fica na mesa.</p>
+  <a href="#contato" class="btn-primary">Quero Mudar de Vida</a>
+</div>
+
+<!-- DASHBOARD -->
+<section id="dashboard">
+  <div class="dash-header">
+    <div>
+      <div class="section-label">Monitorização em tempo real</div>
+      <div class="dash-title">Painel de Analytics</div>
+    </div>
+    <div class="live-badge"><span class="live-dot"></span> AO VIVO</div>
+  </div>
+
+  <!-- Metric cards -->
+  <div class="dash-grid">
+    <div class="metric-card">
+      <div class="metric-label">Visitantes Hoje</div>
+      <div class="metric-value green" id="m-visitors">0</div>
+      <div class="metric-change up" id="m-visitors-change">↑ +0%</div>
+      <div class="sparkline" id="spark-visitors"></div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Cliques CTA</div>
+      <div class="metric-value" id="m-clicks">0</div>
+      <div class="metric-change up" id="m-clicks-change">↑ +0%</div>
+      <div class="sparkline" id="spark-clicks"></div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Tempo Médio (seg)</div>
+      <div class="metric-value" id="m-time">0</div>
+      <div class="metric-change up" id="m-time-change">↑ +0s</div>
+      <div class="sparkline" id="spark-time"></div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Conversão</div>
+      <div class="metric-value" id="m-conv">0%</div>
+      <div class="metric-change up" id="m-conv-change">↑ +0%</div>
+      <div class="sparkline" id="spark-conv"></div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="chart-area">
+    <div class="chart-box">
+      <div class="chart-box-title">Visitantes — Últimas 12h</div>
+      <div class="chart-box-sub">Actualizado a cada 5 segundos</div>
+      <svg class="line-chart-svg" id="lineChart" viewBox="0 0 600 180" preserveAspectRatio="none"></svg>
+    </div>
+    <div class="chart-box">
+      <div class="chart-box-title">Tráfego por Fonte</div>
+      <div class="chart-box-sub">Hoje</div>
+      <div id="sourceList"></div>
+    </div>
+  </div>
+
+  <!-- Activity feed -->
+  <div class="chart-box" style="margin-top:16px">
+    <div class="chart-box-title">Actividade Recente</div>
+    <div class="chart-box-sub">Acções em tempo real</div>
+    <div class="activity-feed" id="activityFeed"></div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact-section" id="contato">
+  <div class="contact-grid">
+    <div class="contact-info">
+      <div class="section-label">Fala Connosco</div>
+      <div class="section-title" style="font-size:40px">Entre em<br>Contacto</div>
+      <p>Tens dúvidas sobre os produtos ou queres começar? Fala diretamente connosco pelo Instagram ou WhatsApp.</p>
+      <a href="https://instagram.com/motvendasviralz12" target="_blank" class="contact-link">
+        <span class="contact-link-icon">📸</span>
+        <div>
+          <div class="contact-link-text">Instagram</div>
+          <div class="contact-link-sub">@motvendasviralz12</div>
+        </div>
+      </a>
+      <a href="https://wa.me/258878326548?text=Olá!%20Vim%20do%20site%20MotVendas%20Viral" target="_blank" class="contact-link">
+        <span class="contact-link-icon">💬</span>
+        <div>
+          <div class="contact-link-text">WhatsApp</div>
+          <div class="contact-link-sub">+258 87 832 6548</div>
+        </div>
+      </a>
+    </div>
+    <div>
+      <div class="chart-box" style="padding:36px">
+        <div class="chart-box-title" style="font-size:16px;margin-bottom:24px">Envia uma mensagem</div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <input type="text" placeholder="O teu nome" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color 0.3s" onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border)'">
+          <input type="text" placeholder="Instagram ou WhatsApp" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color 0.3s" onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border)'">
+          <textarea rows="4" placeholder="A tua mensagem..." style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;resize:none;transition:border-color 0.3s" onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+          <button onclick="sendMessage()" class="btn-primary" style="border:none;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;text-align:center">Enviar Mensagem</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="logo-sm">MotVendas Viral</div>
+  <div>© 2026 — Todos os direitos reservados</div>
+  <div>Moçambique 🇲🇿</div>
+</footer>
+
+<script>
+  // ─── CURSOR ───
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let rx = 0, ry = 0, cx = 0, cy = 0;
+
+  document.addEventListener('mousemove', e => {
+    cx = e.clientX; cy = e.clientY;
+    cursor.style.left = cx + 'px';
+    cursor.style.top = cy + 'px';
+  });
+
+  function animRing() {
+    rx += (cx - rx) * 0.12;
+    ry += (cy - ry) * 0.12;
+    ring.style.left = rx + 'px';
+    ring.style.top = ry + 'px';
+    requestAnimationFrame(animRing);
+  }
+  animRing();
+
+  // ─── COUNTER ANIMATION ───
+  function countUp(id, target, suffix = '', duration = 2000) {
+    const el = document.getElementById(id);
+    let start = 0;
+    const step = target / (duration / 16);
+    const t = setInterval(() => {
+      start = Math.min(start + step, target);
+      el.textContent = Math.floor(start) + suffix;
+      if (start >= target) clearInterval(t);
+    }, 16);
+  }
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        countUp('stat1', 1240);
+        countUp('stat2', 387);
+        countUp('stat3', 94, '%');
+        observer.disconnect();
+      }
+    });
+  }, { threshold: 0.3 });
+  observer.observe(document.querySelector('.hero-stats'));
+
+  // ─── SPARKLINES ───
+  function buildSparklines() {
+    ['visitors','clicks','time','conv'].forEach(k => {
+      const el = document.getElementById('spark-' + k);
+      if (!el) return;
+      const bars = 10;
+      for (let i = 0; i < bars; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'spark-bar' + (i === bars - 1 ? ' active' : '');
+        bar.style.height = (Math.random() * 60 + 20) + '%';
+        el.appendChild(bar);
+      }
+    });
+  }
+  buildSparklines();
+
+  // ─── DASHBOARD DATA ───
+  const state = {
+    visitors: 247,
+    clicks: 63,
+    time: 142,
+    conv: 4.2,
+    history: Array.from({length: 24}, (_, i) => Math.floor(80 + Math.sin(i/3)*40 + Math.random()*30)),
+    visChange: 12,
+    clkChange: 8,
+    timeChange: 23,
+    convChange: 0.3
+  };
+
+  const sources = [
+    { icon: '📸', name: 'Instagram', pct: 48 },
+    { icon: '💬', name: 'WhatsApp', pct: 27 },
+    { icon: '🔍', name: 'Google', pct: 14 },
+    { icon: '🌐', name: 'Directo', pct: 11 },
+  ];
+
+  const actions = ['visita', 'clique', 'clique', 'visita', 'venda', 'visita'];
+  const places = ['Maputo', 'Beira', 'Nampula', 'Matola', 'Tete', 'Inhambane'];
+  const actTypes = ['visit','click','sale'];
+  const actLabels = { visit: '🟢 Nova visita', click: '🔵 Clique no CTA', sale: '🔴 Venda realizada' };
+
+  function updateMetrics() {
+    state.visitors += Math.floor(Math.random() * 3);
+    state.clicks += Math.random() > 0.6 ? 1 : 0;
+    state.conv = (state.clicks / state.visitors * 100).toFixed(1);
+    state.time = 142 + Math.floor(Math.random() * 20 - 10);
+
+    document.getElementById('m-visitors').textContent = state.visitors;
+    document.getElementById('m-clicks').textContent = state.clicks;
+    document.getElementById('m-time').textContent = state.time + 's';
+    document.getElementById('m-conv').textContent = state.conv + '%';
+
+    document.getElementById('m-visitors-change').textContent = `↑ +${state.visChange + Math.floor(Math.random()*2)}%`;
+    document.getElementById('m-clicks-change').textContent = `↑ +${state.clkChange}%`;
+    document.getElementById('m-time-change').textContent = `↑ +${state.timeChange}s`;
+    document.getElementById('m-conv-change').textContent = `↑ +${state.convChange}%`;
+  }
+
+  function renderSources() {
+    const el = document.getElementById('sourceList');
+    el.innerHTML = sources.map(s => `
+      <div class="source-item">
+        <div class="source-icon">${s.icon}</div>
+        <div class="source-name">${s.name}</div>
+        <div class="source-bar-wrap"><div class="source-bar" style="width:${s.pct}%"></div></div>
+        <div class="source-pct">${s.pct}%</div>
+      </div>
+    `).join('');
+  }
+  renderSources();
+
+  function renderLineChart() {
+    const svg = document.getElementById('lineChart');
+    if (!svg) return;
+
+    const w = 600, h = 180, pad = 20;
+    const data = state.history.slice(-20);
+    const max = Math.max(...data);
+    const min = Math.min(...data);
+    const range = max - min || 1;
+
+    const pts = data.map((v, i) => {
+      const x = pad + (i / (data.length - 1)) * (w - pad * 2);
+      const y = h - pad - ((v - min) / range) * (h - pad * 2);
+      return [x, y];
+    });
+
+    const pathD = pts.map((p, i) => (i === 0 ? `M${p[0]},${p[1]}` : `L${p[0]},${p[1]}`)).join(' ');
+    const areaD = `${pathD} L${pts[pts.length-1][0]},${h-pad} L${pts[0][0]},${h-pad} Z`;
+
+    svg.innerHTML = `
+      <defs>
+        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#00ff88" stop-opacity="0.25"/>
+          <stop offset="100%" stop-color="#00ff88" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d="${areaD}" fill="url(#areaGrad)"/>
+      <path d="${pathD}" fill="none" stroke="#00ff88" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      ${pts.map((p,i) => i === pts.length-1 ? `<circle cx="${p[0]}" cy="${p[1]}" r="4" fill="#00ff88"/>` : '').join('')}
+    `;
+  }
+  renderLineChart();
+
+  function addActivity() {
+    const feed = document.getElementById('activityFeed');
+    if (!feed) return;
+
+    const type = actTypes[Math.floor(Math.random() * actTypes.length)];
+    const place = places[Math.floor(Math.random() * places.length)];
+    const mins = Math.floor(Math.random() * 5) + 1;
+
+    const item = document.createElement('div');
+    item.className = 'activity-item';
+    item.innerHTML = `
+      <div class="activity-dot ${type}"></div>
+      <div class="activity-text">${actLabels[type]} <span>— ${place}</span></div>
+      <div class="activity-time">há ${mins} min</div>
+    `;
+    feed.insertBefore(item, feed.firstChild);
+    if (feed.children.length > 6) feed.removeChild(feed.lastChild);
+  }
+
+  // Seed initial activities
+  for (let i = 0; i < 5; i++) addActivity();
+
+  // ─── LIVE UPDATES ───
+  updateMetrics();
+  setInterval(() => {
+    updateMetrics();
+    state.history.push(state.visitors + Math.floor(Math.random() * 10));
+    renderLineChart();
+  }, 5000);
+
+  setInterval(addActivity, 8000);
+
+  // ─── SCROLL ANIMATIONS ───
+  const revealEls = document.querySelectorAll('.card, .product-card, .metric-card');
+  const revObs = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        e.target.style.animation = `fadeUp 0.6s ${i * 0.08}s ease both`;
+        revObs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  revealEls.forEach(el => revObs.observe(el));
+
+  // ─── MESSAGE BUTTON ───
+  function sendMessage() {
+    alert('Mensagem enviada! Vamos contactar-te em breve. 🚀');
+  }
+</script>
+</body>
+</html>
